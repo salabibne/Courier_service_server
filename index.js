@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const port = process.env.PORT || 5000;
 
@@ -10,7 +11,7 @@ app.use(express.json())
 
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri =`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ovwhpk1.mongodb.net/?retryWrites=true&w=majority`
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ovwhpk1.mongodb.net/?retryWrites=true&w=majority`
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -29,8 +30,7 @@ async function run() {
         const userCollection = client.db("SendEasy").collection("Users");
 
         // user information are sending to the dataabse.
-
-        app.post("/registerUser", async(req,res)=>{
+        app.post("/registerUser", async (req, res) => {
             const userInformation = req.body;
             console.log(userInformation);
             const result = await userCollection.insertOne(userInformation);
@@ -49,6 +49,19 @@ run().catch(console.dir);
 
 app.get("/", (req, res) => {
     res.send("courier service is running")
+})
+
+// jwt token
+
+// get token from the user
+
+app.post("/jwt", async(req,res)=>{
+    const user  = req.body;
+    const token = jwt.sign(user,process.env.SECRET_TOKEN, {
+        expiresIn:"1h"
+    })
+
+    res.send({token})
 })
 
 app.listen(port, () => {

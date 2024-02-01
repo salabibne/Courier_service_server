@@ -29,12 +29,31 @@ async function run() {
 
         const userCollection = client.db("SendEasy").collection("Users");
 
+        // get token from the user
+
+        app.post("/jwt", async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.SECRET_TOKEN, {
+                expiresIn: "1h"
+            })
+
+            res.send({ token })
+        })
+
         // user information are sending to the dataabse.
         app.post("/registerUser", async (req, res) => {
             const userInformation = req.body;
             console.log(userInformation);
             const result = await userCollection.insertOne(userInformation);
             res.send(result)
+        })
+
+        // All users details request by Admin
+
+        app.get("/allUsers", async (req, res) => {
+            const users = await userCollection.find().toArray();
+            res.send(users)
+
         })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
@@ -53,16 +72,10 @@ app.get("/", (req, res) => {
 
 // jwt token
 
-// get token from the user
 
-app.post("/jwt", async(req,res)=>{
-    const user  = req.body;
-    const token = jwt.sign(user,process.env.SECRET_TOKEN, {
-        expiresIn:"1h"
-    })
 
-    res.send({token})
-})
+
+
 
 app.listen(port, () => {
     console.log(`courier service is running at ${port}`);
